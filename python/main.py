@@ -87,24 +87,34 @@ def combined_rotation_matrix(angles):
         rotation = np.dot(rotation, rotation_matrix_4d(axis, theta))
     return rotation
 
-# Project 4D points to 3D
+# Define projection matrices
+projection_matrix_4d_to_3d = np.array([
+    [1, 0, 0, 0],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0]
+])
+
+projection_matrix_3d_to_2d = np.array([
+    [1, 0, 0],
+    [0, 1, 0]
+])
+
+# Project 4D points to 3D using a projection matrix
 def project_to_3d(points):
     projected_points = []
     for point in points:
-        x, y, z, w = point
-        f = 1 / (w + 2)
-        x, y, z = x * f, y * f, z * f
-        projected_points.append((x, y, z))
+        projected_point = np.dot(projection_matrix_4d_to_3d, point)
+        w = point[3] + 2  # Perspective division factor
+        projected_points.append(projected_point / w)
     return projected_points
 
-# Project 3D points to 2D
+# Project 3D points to 2D using a projection matrix
 def project(points):
     projected_points = []
     for point in points:
-        x, y, z = point
-        f = 200 / (z + 5)
-        x, y = x * f, y * f
-        projected_points.append((width // 2 + int(x), height // 2 - int(y)))
+        projected_point = np.dot(projection_matrix_3d_to_2d, point)
+        z = point[2] + 5  # Perspective division factor
+        projected_points.append((width // 2 + int(projected_point[0] * 200 / z), height // 2 - int(projected_point[1] * 200 / z)))
     return projected_points
 
 # Draw coordinate system arrows
